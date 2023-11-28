@@ -1,0 +1,91 @@
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract BLOCKHEALTH {
+
+    struct Doc {           // variables that will store the different detsils of the doctor
+        string Doc_name;
+        string Doc_qualification;
+        string Doc_workplace;
+        address Doc_eaddress;
+        bool Doc_is_registered;
+    }
+
+    struct Pat{  // variables that will store the different details of the patient 
+        string Pat_name;
+        uint Pat_age;
+        address Pat_eaddress;
+        bool Pat_is_registered;
+        string[] Pat_Disease;
+        uint[] Pat_prescribedMed;
+
+    }
+
+    struct Med{  // variables that will store the different details of the medicines
+        uint8 Med_id;
+        string Med_name;
+        string Med_expiry;
+        string Med_dose;
+        string Med_price;
+    }
+    mapping(address=> Doc) Doctor;
+    mapping(address=> Pat) Patient;
+    mapping(uint=> Med) Medicine;
+
+
+    function RegisterDoctor (string memory _Doc_name, string memory _Doc_qualification,string memory _Doc_workplace) public { //register a new doctor to ledger
+        require(!Doctor[msg.sender].Doc_is_registered, "The doctor is already registered.");
+        Doctor[msg.sender]=Doc(_Doc_name, _Doc_qualification, _Doc_workplace, msg.sender , true);
+    }
+
+    function RegisterPatient (string memory _Pat_name, uint _Pat_age) public { //register a new patient
+        require(!Patient[msg.sender].Pat_is_registered, "The patient is already registered.");
+        Patient[msg.sender].Pat_name = _Pat_name;
+        Patient[msg.sender].Pat_age = _Pat_age;
+        Patient[msg.sender].Pat_eaddress = msg.sender;
+        Patient[msg.sender].Pat_is_registered = true;
+   }
+   
+   function Add_disease_by_patient (string memory _Pat_Disease) public { // add new disease of the patient 
+       
+       Patient[msg.sender].Pat_Disease.push(_Pat_Disease);
+
+   }
+
+   function addMedicine(uint8 _Med_id, string memory _Med_name , string memory _Med_expiry, string memory _Med_dose, string memory _Med_price) public { 
+       Medicine[_Med_id] = Med(_Med_id,_Med_name, _Med_expiry, _Med_dose, _Med_price);// function to the add the medicines for the patients
+   }
+
+   function PrescribedMedbyDoc(uint8 _Med_id , address _Pat_eaddress) public {//functions to help the doctor to view patient mediciens and presribe
+       Patient[_Pat_eaddress].Pat_prescribedMed.push(_Med_id);
+   }
+
+   function Updateage(uint _Pat_newage) public {// function to update the age of the patient for future purpose
+       Patient[msg.sender].Pat_age=_Pat_newage;
+   }
+
+    function ViewMyRecords () public view returns (string memory ,uint, string[] memory, uint[] memory) {
+        return(Patient[msg.sender].Pat_name, Patient[msg.sender].Pat_age, Patient[msg.sender].Pat_Disease, Patient[msg.sender].Pat_prescribedMed);
+    }
+
+    function ViewMedDetails(uint id) public view returns (string memory Name, string memory Exp, string memory dose, string memory price) {
+        Name = Medicine[id].Med_name;
+        Exp=Medicine[id].Med_expiry;
+        dose=Medicine[id].Med_dose;
+        price=Medicine[id].Med_price;
+
+    }
+
+    function Viewpatientdata (address Pat_eaddress) public view returns (uint[] memory) {
+        return(Patient[Pat_eaddress].Pat_prescribedMed);
+    }
+
+    function ViewMyRecordsbyDoctor (address Pat_eaddress) public view returns (string memory ,uint, string[] memory, uint[] memory) {
+        return(Patient[Pat_eaddress].Pat_name, Patient[Pat_eaddress].Pat_age, Patient[Pat_eaddress].Pat_Disease, Patient[Pat_eaddress].Pat_prescribedMed);
+    }
+
+    function Viewdoc_details (address Doc_eaddresss) public view returns(string memory, string memory, string memory){
+        return(Doctor[Doc_eaddresss].Doc_name, Doctor[Doc_eaddresss].Doc_qualification, Doctor[Doc_eaddresss].Doc_workplace);
+    }
+
+}
